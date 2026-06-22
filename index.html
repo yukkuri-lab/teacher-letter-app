@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>先生への依頼文ジェネレーター｜ゆっくりラボ</title>
+<style>
+  :root{
+    --bg:#faf7f0; --card:#fff; --ink:#4a4740; --ink2:#3b3a33; --sub:#8b887e;
+    --green:#88a86a; --green-d:#6f9152; --green-soft:#e7efdc;
+    --yellow:#f6e7a6; --blue:#cfe0ee; --pink:#f3d9d2;
+    --line:#ece8de; --radius:18px; --shadow:0 8px 26px rgba(120,130,90,.10); color-scheme:light;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;
+    line-height:1.8; -webkit-font-smoothing:antialiased; position:relative; overflow-x:hidden;}
+  .blob{position:absolute; border-radius:50%; z-index:0; opacity:.5; pointer-events:none;}
+  .wrap{max-width:640px; margin:0 auto; padding:30px 18px 70px; position:relative; z-index:1;}
+  header{text-align:center; margin-bottom:22px;}
+  .pill{display:inline-block; font-size:11px; letter-spacing:.1em; color:var(--sub); border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 13px; margin-bottom:12px;}
+  h1{font-size:23px; margin:0 0 8px; color:var(--ink2);}
+  header p{font-size:13.5px; color:var(--sub); margin:0;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px 22px;}
+  label{display:block; font-size:13px; font-weight:700; color:var(--green-d); margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  select, input[type=text], textarea{width:100%; font-size:15px; font-family:inherit; color:var(--ink); background:#fafbf7; border:1.5px solid var(--line); border-radius:12px; padding:12px 13px;}
+  select:focus, input:focus, textarea:focus{outline:none; border-color:var(--green);}
+  textarea{resize:vertical; line-height:1.7;}
+  .ehint{font-size:11.5px; color:var(--sub); margin-top:5px;}
+  .row2{display:flex; gap:10px;}
+  .row2 > div{flex:1;}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-top:6px;}
+  .chip{font-size:12.5px; font-weight:700; border:1.5px solid var(--line); background:#fafbf7; color:var(--ink); border-radius:999px; padding:8px 13px; cursor:pointer; transition:.15s;}
+  .chip:hover{border-color:var(--green);}
+  .chip.on{background:var(--green-soft); border-color:var(--green); color:var(--green-d);}
+  #search{margin-top:6px;}
+  .plist{margin-top:8px; display:flex; flex-direction:column; gap:7px; max-height:120px; overflow-y:auto; padding:2px; -webkit-overflow-scrolling:touch;}
+  .pitem{font-size:14px; text-align:left; width:100%; border:1.5px solid var(--line); background:#fafbf7; border-radius:12px; padding:11px 14px; cursor:pointer; transition:.15s; color:var(--ink); font-family:inherit;}
+  .pitem:hover{border-color:var(--green);}
+  .pitem.on{background:var(--green-soft); border-color:var(--green); color:var(--green-d); font-weight:700;}
+  .pitem .pcat{font-size:10.5px; color:var(--sub); display:block; margin-bottom:1px; font-weight:600;}
+  .pempty{font-size:13px; color:var(--sub); text-align:center; padding:16px 8px;}
+  .tones{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;}
+  .tone{flex:1; min-width:90px; text-align:center; font-size:13px; font-weight:700; border:1.5px solid var(--line); background:#fafbf7; border-radius:11px; padding:9px 6px; cursor:pointer; transition:.15s;}
+  .tone.on{background:var(--green-soft); border-color:var(--green); color:var(--green-d);}
+  .gen{width:100%; margin-top:20px; background:var(--green); color:#fff; border:none; font-family:inherit; font-weight:800; font-size:16px; border-radius:999px; padding:15px; cursor:pointer; box-shadow:0 8px 20px rgba(136,168,106,.35); transition:.2s;}
+  .gen:hover{background:var(--green-d);}
+  .out{margin-top:22px;}
+  .ocard{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:18px 18px; margin-bottom:14px;}
+  .oh{display:flex; align-items:center; gap:9px; margin-bottom:10px;}
+  .badge{font-size:11px; font-weight:800; border-radius:999px; padding:3px 11px;}
+  .b-a{background:var(--green-soft); color:var(--green-d);} .b-b{background:#e8f1f8; color:#3c6ea0;} .b-c{background:#fdf1da; color:#b9791c;}
+  .oh small{color:var(--sub); font-size:11.5px;}
+  .acts{margin-left:auto; display:flex; gap:7px; align-items:center;}
+  .copy{font-size:12px; font-weight:700; color:#fff; background:var(--green); border:none; border-radius:9px; padding:7px 13px; cursor:pointer; font-family:inherit;}
+  .copy:hover{background:var(--green-d);}
+  .print{color:var(--green-d); background:var(--green-soft);}
+  .print:hover{background:#d8e6c6;}
+  .moreBtn{width:100%; margin:2px 0 14px; font-family:inherit; font-size:13.5px; font-weight:700; color:var(--green-d); background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:11px; cursor:pointer; transition:.15s;}
+  .moreBtn:hover{border-color:var(--green);}
+  .text{white-space:pre-wrap; font-size:14px; line-height:1.85; color:var(--ink); background:#fafbf7; border:1px dashed var(--line); border-radius:11px; padding:13px 15px;}
+  .hint{font-size:12px; color:var(--sub); text-align:center; margin-top:6px;}
+  footer{text-align:center; color:var(--sub); font-size:11.5px; margin-top:26px; line-height:1.7;}
+  .empty{color:var(--sub); font-size:13.5px; text-align:center; padding:30px 10px;}
+</style>
+</head>
+<body>
+  <div class="blob" style="width:160px;height:160px;background:#f6e7a6;top:40px;left:-50px;"></div>
+  <div class="blob" style="width:130px;height:130px;background:#d9e8ce;top:420px;right:-45px;opacity:.4;"></div>
+  <div class="blob" style="width:150px;height:150px;background:#cfe0ee;bottom:80px;left:-55px;opacity:.4;"></div>
+
+  <div class="wrap">
+    <header>
+      <span class="pill">ゆっくりラボ</span>
+      <h1>先生への依頼文ジェネレーター</h1>
+      <p>「どう伝えればいいか分からない」を、3クリックで“そのまま送れる文章”に。</p>
+    </header>
+
+    <div class="panel">
+      <label>① カテゴリを選ぶ</label>
+      <div class="cats" id="cats"></div>
+
+      <label for="search">② 困りごとを選ぶ</label>
+      <input type="text" id="search" placeholder="🔍 キーワードで探す（例：なわとび）">
+      <div class="plist" id="plist"></div>
+
+      <div class="row2">
+        <div>
+          <label for="name">③ お子さんの呼び方（任意）</label>
+          <input type="text" id="name" placeholder="例：ゆっくり">
+        </div>
+        <div>
+          <label for="grade">学年（任意）</label>
+          <input type="text" id="grade" placeholder="例：小2">
+        </div>
+      </div>
+
+      <label for="episode">④ 具体的なエピソード（任意）</label>
+      <textarea id="episode" rows="2" placeholder="例：宿題を前にすると固まってしまい、なかなか始められないことが続いている"></textarea>
+      <div class="ehint">※その子のリアルな一言を足すと、ぐっと伝わる文章になります。</div>
+
+      <label>⑤ トーン</label>
+      <div class="tones" id="tones">
+        <div class="tone on" data-t="soft">やわらかい</div>
+        <div class="tone" data-t="firm">しっかり</div>
+        <div class="tone" data-t="short">簡潔に</div>
+      </div>
+
+      <button class="gen" id="gen">文章をつくる ✏️</button>
+      <div class="hint">🔒 入力した内容は、この端末の中だけで使われます。どこにも送信・保存されません。</div>
+    </div>
+
+    <div class="out" id="out">
+      <div class="empty">困りごとを選んで「文章をつくる」を押すと、<br>3つの文面（丁寧版・1枚メモ版・話し言葉版）が出ます。</div>
+    </div>
+
+    <footer>
+      ゆっくりラボ｜先生への依頼文ジェネレーター<br>
+      ※この文面は下書きです。お子さんの様子に合わせて、ことばを足したり減らしたりしてお使いください。
+    </footer>
+  </div>
+
+<script>
+const DATA = [
+ // ── 学習・授業面 ──
+ {cat:"学習・授業面", problem:"先生の指示が一度で伝わりにくい", why:"一度に複数の指示を理解するのが少し苦手なところがあります", whyc:"一度にたくさん言われると分からなくなっちゃうみたいで", asks:["指示を一つずつ、具体的に伝えていただく","今やることを黒板などに書いて見せていただく"]},
+ {cat:"学習・授業面", problem:"一度にたくさんの指示が難しい", why:"一度にたくさんの情報を処理するのが苦手なところがあります", whyc:"いっぺんに色々言われると固まっちゃうみたいで", asks:["今やることを一つだけ示していただく","一つ終わってから次を伝えていただく"]},
+ {cat:"学習・授業面", problem:"全体への指示だと自分のことに気づけない", why:"全体に向けた指示が自分に向けられたものだと気づきにくく、一斉指示で動けないことがあります", whyc:"みんなへの指示だと、自分のことだって気づけないことがあって", asks:["個別に一声かけていただく","近くで具体的に示していただく"]},
+ {cat:"学習・授業面", problem:"板書を写すのが苦手", why:"書くことに時間がかかり、板書を写すことに集中すると授業の内容が入りにくくなることがあります", whyc:"黒板を写すだけで疲れちゃって、話が入らなくなるみたいで", asks:["板書の量を減らす、または写真やプリントで補っていただく","写しきれなくても大丈夫だと声をかけていただく"]},
+ {cat:"学習・授業面", problem:"文字を書くのが苦手・形が整わない", why:"手先の使い方や形をとらえることが苦手で、文字を整えて書くのに時間がかかります", whyc:"字を書くのに力がいるみたいで、なかなか整わないみたいで", asks:["マスの大きいノートを使わせていただく","書く量を調整していただく","きれいさより「書けたこと」を認めていただく"]},
+ {cat:"学習・授業面", problem:"音読が苦手・行を読み飛ばす", why:"文字を目で追い続けるのが苦手で、音読で行を飛ばしたり、つかえたりすることがあります", whyc:"どこを読んでるか分からなくなって、つっかえちゃうみたいで", asks:["読む場所を指でなぞる・定規をあてるなどを認めていただく","間違えても焦らせず見守っていただく"]},
+ {cat:"学習・授業面", problem:"算数・計算でつまずく", why:"数の感覚や手順をつかむのに時間がかかり、計算でつまずくことがあります", whyc:"数の計算になると、急に固まっちゃうみたいで", asks:["指やおはじき・図を使うことを認めていただく","できる問題から取り組ませていただく"]},
+ {cat:"学習・授業面", problem:"集中が続かない・気が散りやすい", why:"周りの刺激に気を取られやすく、集中を続けるのが苦手なところがあります", whyc:"周りが気になって、なかなか集中が続かないみたいで", asks:["前のほうの落ち着いた席にご配慮いただく","区切りごとに声をかけていただく"]},
+ {cat:"学習・授業面", problem:"授業中に立ち歩いてしまう", why:"じっとしていることが苦手で、体を動かしたくなってしまうところがあります", whyc:"じっとしてるのがしんどくて、つい動いちゃうみたいで", asks:["お手伝いなど体を動かせる役割をいただく","頭ごなしに叱らず、戻れたら認めていただく"]},
+ {cat:"学習・授業面", problem:"テストや作業で時間が足りない", why:"取りかかりや書くことに時間がかかり、時間内に終わらないことがあります", whyc:"ゆっくりだから、時間が足りなくなっちゃうみたいで", asks:["可能な範囲で時間に少し余裕をいただく","終わらなくても途中まででよいと伝えていただく"]},
+
+ // ── 宿題・持ち物・整理 ──
+ {cat:"宿題・持ち物・整理", problem:"宿題に取りかかれない・終わらない", why:"始める前に量に圧倒されてしまい、宿題に取りかかるのが難しいことがあります", whyc:"宿題を前にすると、多くて固まっちゃうみたいで", asks:["量を調整していただく","できた分を認めていただく"]},
+ {cat:"宿題・持ち物・整理", problem:"忘れ物が多い", why:"持ち物の準備や記憶の管理が苦手で、忘れ物が多くなってしまいます", whyc:"用意したつもりでも、つい忘れちゃうみたいで", asks:["持ち物を黒板やメモで分かりやすく示していただく","忘れた時に強く叱らず、一緒に確認していただく"]},
+ {cat:"宿題・持ち物・整理", problem:"連絡帳が書き写せない", why:"書くこと・写すことに時間がかかり、連絡帳を最後まで書ききれないことがあります", whyc:"連絡帳を写すのが間に合わなくて、空っぽになっちゃうことがあって", asks:["連絡帳を写真やプリントで補っていただく","写しきれない時に手伝っていただく"]},
+ {cat:"宿題・持ち物・整理", problem:"提出物を出し忘れる", why:"やることの管理が苦手で、持ってきていても提出を忘れてしまうことがあります", whyc:"持っては行くんですけど、出すのを忘れちゃうみたいで", asks:["朝など決まったタイミングで声をかけていただく"]},
+ {cat:"宿題・持ち物・整理", problem:"机・ロッカーの整理が苦手", why:"ものを整理して管理するのが苦手で、机やロッカーが片づきにくいところがあります", whyc:"片づけが苦手で、机の中がぐちゃぐちゃになっちゃうみたいで", asks:["片づけの手順を具体的に示していただく","一緒に整理する時間をいただく"]},
+
+ // ── 運動・手先（不器用） ──
+ {cat:"運動・手先（不器用）", problem:"なわとびが苦手", why:"手と足を同時に動かす協調運動が苦手で、なわとびがうまく跳べないことがあります", whyc:"手と足を一緒に動かすのが難しくて、なわとびが苦手みたいで", asks:["回数を競うのではなく、本人のペースで取り組ませていただく","跳べた回数を認めていただく"]},
+ {cat:"運動・手先（不器用）", problem:"鉄棒・跳び箱・マットが苦手", why:"体の使い方やバランスをとるのが苦手で、器械運動に強い苦手さがあります", whyc:"体の動かし方が難しくて、鉄棒や跳び箱が怖いみたいで", asks:["無理にやらせず、できる動きから取り組ませていただく","怖がる時は見学も認めていただく"]},
+ {cat:"運動・手先（不器用）", problem:"ボール運動・球技が苦手", why:"動くものに合わせて体を動かすのが苦手で、ボール運動に苦手さがあります", whyc:"ボールに合わせて動くのが難しいみたいで", asks:["責めるような雰囲気にならないようご配慮いただく","参加の仕方や役割を工夫していただく"]},
+ {cat:"運動・手先（不器用）", problem:"はさみ・のりなど手先の作業が苦手", why:"手先の細かい作業が苦手で、はさみやのりを使う活動に時間がかかります", whyc:"手先が不器用で、はさみやのりが難しいみたいで", asks:["時間に余裕をいただく","難しい部分はお手伝いいただく"]},
+ {cat:"運動・手先（不器用）", problem:"着替え・体操服に時間がかかる", why:"手先の作業や気持ちの切り替えに時間がかかり、着替えが遅くなることがあります", whyc:"着替えに時間がかかって、間に合わないことがあって", asks:["早めに着替え始められるよう声をかけていただく","急かさず見守っていただく"]},
+
+ // ── 人間関係 ──
+ {cat:"人間関係", problem:"友達に自分から話しかけられない", why:"友達と関わりたい気持ちはあるのですが、自分からきっかけをつかむのが苦手なところがあります", whyc:"本当は遊びたいのに、最初の一言が出ないみたいで", asks:["休み時間などに、さりげなく友達と関わるきっかけを作っていただく"]},
+ {cat:"人間関係", problem:"友達との距離感が分かりにくい", why:"相手との距離感や、その場の空気を読み取るのが少し苦手なところがあります", whyc:"距離が近すぎたり、しつこくなっちゃうことがあるみたいで", asks:["トラブルになりそうな時に、さりげなく声をかけていただく"]},
+ {cat:"人間関係", problem:"勝ち負けにこだわる・負けると崩れる", why:"勝ち負けへのこだわりが強く、負けたときに気持ちを切り替えるのが難しいことがあります", whyc:"負けるのがすごく悔しくて、崩れちゃうことがあって", asks:["勝ち負けだけにならない関わりを工夫していただく","落ち着くまで見守っていただく"]},
+ {cat:"人間関係", problem:"順番やルールを守るのが難しい", why:"待つことやルールに合わせることが苦手で、つい先に動いてしまうことがあります", whyc:"待つのが苦手で、つい先に行っちゃうみたいで", asks:["順番を絵や言葉で分かりやすく示していただく","守れた時に認めていただく"]},
+ {cat:"人間関係", problem:"思ったことをそのまま言ってしまう", why:"感じたことをそのまま言葉にしてしまい、悪気なく相手を傷つけてしまうことがあります", whyc:"思ったことをそのまま言っちゃって、トラブルになることがあって", asks:["言い方を一緒に考える機会をいただく","トラブルの背景も聞いていただく"]},
+
+ // ── 学校生活・集団行動 ──
+ {cat:"学校生活・集団行動", problem:"急な予定変更でパニックになる", why:"見通しが立たないと強い不安を感じやすいところがあります", whyc:"急に予定が変わると、頭が真っ白になっちゃうみたいで", asks:["予定の変更がある時は、できるだけ早めに伝えていただく","変更を絵や文字で見せていただく"]},
+ {cat:"学校生活・集団行動", problem:"活動の切り替えが苦手", why:"一つのことから次へ切り替えるのが苦手で、休み時間から授業などの切り替えに時間がかかります", whyc:"切り替えが苦手で、次に進むのに時間がかかるみたいで", asks:["切り替えの前に予告していただく","少し時間に余裕をいただく"]},
+ {cat:"学校生活・集団行動", problem:"並ぶ・集合が苦手", why:"周りに合わせて並んだり集合したりするのが苦手なところがあります", whyc:"並ぶのや集合が苦手で、もたついちゃうみたいで", asks:["並ぶ場所を分かりやすく示していただく","急かさず見守っていただく"]},
+ {cat:"学校生活・集団行動", problem:"席替えで不安定になる", why:"環境の変化に不安を感じやすいところがあります", whyc:"席が変わるだけでも、すごく不安になっちゃうみたいで", asks:["席替えの前に予告していただく","落ち着いて過ごせる席をご配慮いただく"]},
+ {cat:"学校生活・集団行動", problem:"行事（運動会・発表会など）がしんどい", why:"人の多さや大きな音、いつもと違う流れに強い負担を感じることがあります", whyc:"人が多くて音も大きい行事は、すごく疲れちゃうみたいで", asks:["事前に当日の流れを教えていただく","つらくなった時に休める場所をご用意いただく"]},
+ {cat:"学校生活・集団行動", problem:"給食の偏食", why:"感覚の過敏さから、どうしても食べられないものがあります", whyc:"においや食感が苦手で、食べられないものがあるみたいで", asks:["完食を目標にせず、食べられる範囲で見守っていただく","量を調整させていただく"]},
+
+ // ── 感覚（過敏など） ──
+ {cat:"感覚（過敏など）", problem:"教室の音・ざわざわがつらい", why:"聴覚過敏があり、ざわつきや大きな音に強い負担を感じることがあります", whyc:"教室がざわざわすると、耳がしんどくなっちゃうみたいで", asks:["イヤーマフの使用を認めていただく","つらい時に静かな場所で少し休めるようにしていただく"]},
+ {cat:"感覚（過敏など）", problem:"体育館・朝礼など大きな音がつらい", why:"聴覚過敏があり、反響する音や号令の声に強い負担を感じることがあります", whyc:"体育館みたいに音が響く場所が、すごく苦手みたいで", asks:["イヤーマフの使用や、少し離れた位置での参加を認めていただく","参加できる範囲で見守っていただく"]},
+ {cat:"感覚（過敏など）", problem:"プールがつらい（シャワー・友達の声）", why:"聴覚過敏があり、シャワーの音や友達の声に強い負担を感じます。プールではイヤーマフが使えないため、特につらくなりやすいです", whyc:"シャワーの音とお友達の声がしんどくて、プールではイヤーマフも使えないので余計につらいみたいで", asks:["見学から始める・シャワーを別のタイミングにするなど、参加の仕方を一緒に相談させていただく","つらい時は無理に入らない形にしていただく"]},
+ {cat:"感覚（過敏など）", problem:"服のタグ・粘土など感触が苦手（触覚過敏）", why:"触覚に過敏さがあり、服のタグや粘土・のりなどの感触に強い負担を感じることがあります", whyc:"服のタグや粘土の感触が苦手で、つらくなっちゃうみたいで", asks:["苦手な感触のものを無理に触らせない形にしていただく","代わりの方法を一緒に考えていただく"]},
+ {cat:"感覚（過敏など）", problem:"まぶしさ・光がつらい（視覚過敏）", why:"視覚に過敏さがあり、強い光やまぶしさに負担を感じることがあります", whyc:"まぶしいのが苦手で、目がしんどくなっちゃうみたいで", asks:["まぶしくない席にご配慮いただく","つらい時の調整を認めていただく"]},
+ {cat:"感覚（過敏など）", problem:"においに敏感（給食・トイレなど）", why:"嗅覚に過敏さがあり、強いにおいに負担を感じることがあります", whyc:"においに敏感で、給食やトイレのにおいがつらいみたいで", asks:["つらい時に席や場所を調整していただく","無理のない範囲で見守っていただく"]},
+ {cat:"感覚（過敏など）", problem:"学校で極度に疲れてしまう", why:"学校で一生懸命がんばっている分、強く疲れてしまうことがあります", whyc:"学校ですごく頑張ってる分、帰るとぐったりしちゃうみたいで", asks:["疲れが強い日は、宿題の量や活動を調整していただく","休憩をとれるようにしていただく"]},
+
+ // ── 気持ち・情緒 ──
+ {cat:"気持ち・情緒", problem:"かんしゃく・気持ちのコントロールが難しい", why:"気持ちが高ぶると自分で抑えるのが難しく、かんしゃくにつながることがあります", whyc:"気持ちが高ぶると、自分で抑えるのが難しいみたいで", asks:["落ち着ける場所で少しクールダウンさせていただく","落ち着いてから話を聞いていただく"]},
+ {cat:"気持ち・情緒", problem:"不安が強い・心配しすぎる", why:"先の見通しが立たないことや、失敗への不安が強いところがあります", whyc:"心配性で、不安が強くなっちゃうことが多くて", asks:["見通しを具体的に伝えていただく","「大丈夫」と安心できる声かけをいただく"]},
+ {cat:"気持ち・情緒", problem:"困った気持ちを言葉で伝えられない", why:"困った時に、自分の気持ちを言葉にするのが苦手なところがあります", whyc:"困っても、それを言葉でうまく言えないみたいで", asks:["「どうした?」だけでなく、選択肢で聞いていただく","落ち着いてから話を聞いていただく"]},
+ {cat:"気持ち・情緒", problem:"学校では平気そうで、家で荒れる", why:"学校では我慢してがんばっている分、家で気持ちが不安定になることがあります", whyc:"学校では頑張ってる反動で、家で爆発しちゃうことがあって", asks:["学校での小さなサインにも気づいていただく","気になる様子があれば家庭にも共有していただく"]},
+ {cat:"気持ち・情緒", problem:"登校をしぶることがある", why:"不安が強く、登校をしぶることがあります", whyc:"不安が強い日は、学校に行きたくないってなっちゃうことがあって", asks:["行きしぶりの日の対応を一緒に考えさせていただく","朝つらい時の受け入れ方をご相談させていただく"]},
+
+ // ── 生活・身辺自立 ──
+ {cat:"生活・身辺自立", problem:"トイレに行きたいと言えない・我慢する", why:"自分から申し出るのが苦手で、トイレを我慢してしまうことがあります", whyc:"行きたいって言い出せなくて、我慢しちゃうことがあって", asks:["休み時間にさりげなく声をかけていただく","いつでも行ってよいと伝えていただく"]},
+ {cat:"生活・身辺自立", problem:"体調や痛みをうまく伝えられない", why:"自分の体の状態に気づいたり伝えたりするのが苦手で、不調を言い出せないことがあります", whyc:"しんどくても、それをうまく言えないみたいで", asks:["様子が気になる時に声をかけていただく","気づいたことを家庭にも共有していただく"]},
+];
+
+// ── 2-step picker (category chips + search + filtered list) ──
+const cats = [...new Set(DATA.map(d=>d.cat))];
+const catsEl = document.getElementById('cats');
+const plist = document.getElementById('plist');
+const search = document.getElementById('search');
+let activeCat = cats[0];
+let picked = -1;          // selected DATA index
+
+cats.forEach(c=>{
+  const b=document.createElement('button');
+  b.type='button'; b.className='chip'+(c===activeCat?' on':''); b.textContent=c;
+  b.onclick=()=>{ activeCat=c; search.value=''; renderList(); };
+  catsEl.appendChild(b);
+});
+
+function renderList(){
+  const q = search.value.trim();
+  // highlight chip only when not searching
+  [...catsEl.children].forEach(b=>b.classList.toggle('on', !q && b.textContent===activeCat));
+  const items = q
+    ? DATA.map((d,i)=>({i,d})).filter(o=>o.d.problem.includes(q)||o.d.cat.includes(q)||o.d.why.includes(q))
+    : DATA.map((d,i)=>({i,d})).filter(o=>o.d.cat===activeCat);
+  plist.innerHTML='';
+  if(items.length===0){ plist.innerHTML='<div class="pempty">見つかりませんでした。別のことばで探すか、カテゴリから選んでください。</div>'; return; }
+  items.forEach(({i,d})=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='pitem'+(i===picked?' on':'');
+    b.innerHTML = (q?`<span class="pcat">${d.cat}</span>`:'') + d.problem;
+    b.onclick=()=>{ picked=i; [...plist.children].forEach(x=>x.classList.remove('on')); b.classList.add('on'); };
+    plist.appendChild(b);
+  });
+}
+search.addEventListener('input', renderList);
+renderList();
+
+// tone toggle
+let tone='soft';
+document.querySelectorAll('.tone').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tone').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); tone=t.dataset.t;
+});
+
+function nm(){ const n=document.getElementById('name').value.trim(); return n||'本人'; }
+function gr(){ return document.getElementById('grade').value.trim(); }
+function ep(){ return document.getElementById('episode').value.trim(); }
+
+function letterPolite(d){
+  const name=nm(); const e=ep();
+  const askLine = d.asks.join('、') ;
+  let end;
+  if(tone==='firm') end='お忙しいところ恐れ入りますが、ご配慮いただけますようお願いいたします。\nいつもありがとうございます。';
+  else if(tone==='short') end='ご相談いただけますと助かります。よろしくお願いいたします。';
+  else end='先生のご負担にならない範囲で構いません。難しい場合は、また一緒に考えていただけたらうれしいです。\nいつもありがとうございます。';
+  const head = (tone==='short') ? '' : 'いつもお世話になっております。\n\n';
+  const epLine = e ? `実際に、${e}、ということがありました。\n` : '';
+  const body = `${name}について、ひとつご相談させてください。\n\n${name}は、${d.why}。\n${epLine}つきましては、${askLine}などをご相談できればと思っています。\n\n家庭でも、本人に合った形で取り組んでいきます。\n`;
+  return head + body + '\n' + end;
+}
+function memo(d){
+  const name=nm(); const g=gr()?`（${gr()}）`:''; const e=ep();
+  return `■ ${name}${g} について（先生への共有メモ）\n\n`+
+  `・様子：${d.why}\n`+
+  (e?`・最近のできごと：${e}\n`:'')+
+  `・お願いしたい配慮：\n`+ d.asks.map(a=>`　- ${a.replace(/いただく$/,'いただけると助かります')}`).join('\n') +
+  `\n・無理のない範囲で構いません。家庭でも取り組みます。`;
+}
+function spoken(d){
+  const name=nm(); const e=ep();
+  const asks = d.asks.map(a=>a.replace(/いただく$/,'もらう'));
+  const epLine = e ? `この前も、${e}…。\n` : '';
+  return `実は${name}、${d.whyc}…。\n${epLine}もしよければ、${asks.join('、')}と助かります。\n全部でなくて大丈夫です。家でもできることはやってみますね。`;
+}
+
+function card(badge,bcls,label,text,withPrint){
+  const printBtn = withPrint ? `<button class="copy print" onclick="printText(this)">🖨 印刷</button>` : '';
+  return `<div class="ocard"><div class="oh"><span class="badge ${bcls}">${badge}</span><small>${label}</small>`+
+  `<div class="acts">${printBtn}<button class="copy" onclick="copyText(this)">コピー</button></div></div>`+
+  `<div class="text">${text.replace(/</g,'&lt;')}</div></div>`;
+}
+window.copyText=function(btn){
+  const t=btn.closest('.ocard').querySelector('.text').innerText;
+  navigator.clipboard.writeText(t).then(()=>{const o=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(()=>btn.textContent=o,1500);});
+};
+window.printText=function(btn){
+  const t=btn.closest('.ocard').querySelector('.text').innerText.replace(/</g,'&lt;');
+  const w=window.open('','_blank','width=720,height=900');
+  if(!w){ alert('印刷用ウィンドウを開けませんでした。ブラウザのポップアップ許可をご確認ください。'); return; }
+  w.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>先生への共有メモ</title>'+
+  '<style>body{font-family:-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;line-height:1.95;color:#2b2b2b;max-width:620px;margin:42px auto;padding:0 26px;white-space:pre-wrap;font-size:15px;}'+
+  '.ft{margin-top:44px;color:#aaa;font-size:11px;border-top:1px solid #e3e3e3;padding-top:10px;}</style></head>'+
+  '<body>'+t+'<div class="ft">ゆっくりラボ｜先生への依頼文ジェネレーター</div></body></html>');
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 350);
+};
+window.toggleMore=function(){
+  const m=document.getElementById('more'); const b=document.getElementById('moreBtn');
+  const open=m.style.display!=='none';
+  m.style.display=open?'none':'block';
+  b.textContent=open?'▼ ほかの形式も見る（メモ版・話し言葉版）':'▲ 閉じる';
+};
+
+document.getElementById('gen').onclick=()=>{
+  const out = document.getElementById('out');
+  if(picked<0){ out.innerHTML='<div class="empty">まず上で困りごとを1つ選んでください。</div>'; out.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  const d = DATA[picked];
+  out.innerHTML =
+    card('A 丁寧版','b-a','連絡帳・メール用｜まずはこれ', letterPolite(d), false) +
+    `<button class="moreBtn" id="moreBtn" onclick="toggleMore()">▼ ほかの形式も見る（メモ版・話し言葉版）</button>` +
+    `<div id="more" style="display:none">` +
+      card('B 1枚メモ版','b-b','配布・面談で渡す用（印刷できます）', memo(d), true) +
+      card('C 話し言葉版','b-c','面談で口頭で言う用', spoken(d), false) +
+    `</div>`;
+  out.scrollIntoView({behavior:'smooth', block:'start'});
+};
+</script>
+</body>
+</html>
