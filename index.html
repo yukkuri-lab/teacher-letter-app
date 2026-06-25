@@ -227,7 +227,7 @@ document.querySelectorAll('.tone').forEach(t=>t.onclick=()=>{
   t.classList.add('on'); tone=t.dataset.t;
 });
 
-function nm(){ const n=document.getElementById('name').value.trim(); return n||'本人'; }
+function nm(){ const n=document.getElementById('name').value.trim(); return n||'うちの子'; }
 function gr(){ return document.getElementById('grade').value.trim(); }
 function ep(){ return document.getElementById('episode').value.trim(); }
 
@@ -239,8 +239,8 @@ function letterPolite(d){
   else if(tone==='short') end='ご相談いただけますと助かります。よろしくお願いいたします。';
   else end='先生のご負担にならない範囲で構いません。難しい場合は、また一緒に考えていただけたらうれしいです。\nいつもありがとうございます。';
   const head = (tone==='short') ? '' : 'いつもお世話になっております。\n\n';
-  const epLine = e ? `実際に、${e}、ということがありました。\n` : '';
-  const body = `${name}について、ひとつご相談させてください。\n\n${name}は、${d.why}。\n${epLine}つきましては、${askLine}などをご相談できればと思っています。\n\n家庭でも、本人に合った形で取り組んでいきます。\n`;
+  const epLine = e ? `具体的には、${e}。\n` : '';
+  const body = `${name}のことで、ひとつご相談させてください。\n\n${d.why}。\n${epLine}つきましては、${askLine}などをお願いできればと思っています。\n\n家庭でも、できることに取り組んでいきます。\n`;
   return head + body + '\n' + end;
 }
 function memo(d){
@@ -254,7 +254,7 @@ function memo(d){
 function spoken(d){
   const name=nm(); const e=ep();
   const asks = d.asks.map(a=>a.replace(/いただく$/,'もらう'));
-  const epLine = e ? `この前も、${e}…。\n` : '';
+  const epLine = e ? `${e}…。\n` : '';
   return `実は${name}、${d.whyc}…。\n${epLine}もしよければ、${asks.join('、')}と助かります。\n全部でなくて大丈夫です。家でもできることはやってみますね。`;
 }
 
